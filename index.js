@@ -19,20 +19,21 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
       const serviceCollection = client.db("doctor").collection("services");
+      const reviewCollection = client.db("doctor").collection("review");
       
       app.get('/limitservices', async(req, res) => {
         const query = {}
         const cursor = serviceCollection.find(query);
         const services = await cursor.limit(3).toArray();
         res.send(services);
-      })
+      });
 
       app.get('/services', async(req, res) => {
         const query = {}
         const cursor = serviceCollection.find(query);
         const services = await cursor.toArray();
         res.send(services);
-      })
+      });
 
 
       app.get("/services/:id", async (req, res) => {
@@ -41,6 +42,11 @@ async function run() {
         const service = await serviceCollection.findOne(query);
         res.send(service);
       });
+
+
+
+      // Review
+
 
 
   
