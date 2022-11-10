@@ -19,7 +19,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
       const serviceCollection = client.db("doctor").collection("services");
-      const reviewCollection = client.db("doctor").collection("review");
+      const reviewCollection = client.db("doctor").collection("reviews");
       
       app.get('/limitservices', async(req, res) => {
         const query = {}
@@ -55,12 +55,83 @@ async function run() {
 
       // Review
 
-      app.get("/reviews/:id", async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: ObjectId(id) };
-        const review = await reviewCollection.findOne(query);
-        res.send(review);
-      });
+      app.get('/reviews', async (req, res) => {
+        let query = {};
+        if (req.query.email) {
+          query = {
+              email: req.query.email
+          }
+      }
+        const cursor = reviewCollection.find(query);
+        const reviews = await cursor.toArray();
+        res.send(reviews);
+    });
+
+    app.delete('/reviews/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await reviewCollection.deleteOne(query);
+      res.send(result);
+  })
+
+      app.post('/reviews', async (req, res) => {
+        const review = req.body;
+        const result = await reviewCollection.insertOne(review);
+        res.send(result);
+    });
+
+  
+    app.get("/reviews/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+    
+        const review = await reviewCollection.findOne({ _id: ObjectId(id) });
+    
+        res.send({
+          success: true,
+          data: review,
+        });
+      } catch (error) {
+        res.send({
+          success: false,
+          error: error.message,
+        });
+      }
+    });
+    
+
+    app.patch("/reviews/:id", async (req, res) => {
+      const { id } = req.params;
+    
+      try {
+        const result = await reviewCollection.updateOne({ _id: ObjectId(id) }, { $set: req.body });
+    
+        if (result.matchedCount) {
+          res.send({
+            success: true,
+            message: `successfully updated ${req.body.message}`,
+          });
+        } else {
+          res.send({
+            success: false,
+            error: "Couldn't update  the product",
+          });
+        }
+      } catch (error) {
+        res.send({
+          success: false,
+          error: error.message,
+        });
+      }
+    });
+
+
+
+
+
+
+
+
 
   
     } finally {
