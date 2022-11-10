@@ -44,10 +44,23 @@ async function run() {
       });
 
 
+      app.post('/services', async (req, res) => {
+        const service = req.body;
+        const result = await serviceCollection.insertOne(service);
+        res.send(result);
+    });
+
+
+
 
       // Review
 
-
+      app.get("/reviews/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const review = await reviewCollection.findOne(query);
+        res.send(review);
+      });
 
   
     } finally {
